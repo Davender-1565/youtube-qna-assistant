@@ -1,1 +1,1 @@
-# youtube_qna_chrome_extension
+# youtube_qna_assistant
