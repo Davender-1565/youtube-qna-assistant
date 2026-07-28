@@ -1,1 +1,1 @@
-# youtube_qna_assistant
+# youtube-qna-assistant
