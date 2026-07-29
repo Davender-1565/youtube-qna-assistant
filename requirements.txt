@@ -1,0 +1,25 @@
+#frameworks
+fastapi==0.115.5
+uvicorn[standard]==0.32.1
+
+#OpenAI
+openai==1.58.1
+
+#Environment
+python-dotenv==1.0.1
+
+#YouTube- Transcripts
+youtube-transcript-api==1.2.4
+
+#Vector database and embeddings
+faiss-cpu==1.8.0
+sentence-transformers==3.3.1
+
+#RAG Improvements (hybrid search)
+rank-bm25==0.2.2
+
+#utilites
+pydantic==2.10.3
+httpx==0.28.1
+requests==2.32.3
+numpy==1.26.4
