@@ -26,7 +26,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production: specify your extension origin
+    allow_origins=["*", "chrome-extension://*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -127,9 +127,12 @@ async def get_or_create_rag_session(video_id: str, video_title: str = "") -> RAG
 
     transcript_result = transcript_fetcher.get_transcript(video_id)
     if not transcript_result['success']:
+        error_detail = transcript_result['error']
+        if 'IP blocking' in error_detail or 'IpBlocked' in error_detail:
+            error_detail += " Try a different video or fetch transcript client-side."
         raise HTTPException(
             status_code=404,
-            detail=f"Failed to fetch transcript: {transcript_result['error']}"
+            detail=f"Failed to fetch transcript: {error_detail}"
         )
 
     rag = RAGSystem()
@@ -266,6 +269,7 @@ async def get_transcript(request: TranscriptRequest):
     Fetch transcript for a video (without building RAG index)
     Useful for preview or verification
     """
+    
     try:
         result = transcript_fetcher.get_transcript(request.video_id)
         if not result['success']:
