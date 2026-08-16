@@ -9,6 +9,7 @@ AI-powered YouTube video Q&A assistant with **hybrid RAG** (Retrieval-Augmented 
 - **Conversation Memory**: Remembers previous Q&A per video (5 exchanges)
 - **Multiple Search Strategies**: semantic / bm25 / hybrid / hybrid_rerank (recommended)
 - **Timestamp References**: Answers include `[MM:SS]` citations
+- **Clickable Timestamps**: Click timestamps in chat to seek video to that moment
 - **Session Management**: Cache RAG indexes for fast repeated queries
 - **Chrome Extension Ready**: CORS enabled, RESTful API
 
@@ -192,6 +193,64 @@ async function askQuestion(videoId, question) {
 }
 ```
 
+## Chrome Extension (Local Development)
+
+A companion Chrome extension is available in `../youtube-chat-extension/`.
+
+### Features
+- **Side Panel UI**: Opens alongside YouTube video
+- **Auto-detects Video**: Reads video ID from URL automatically
+- **Conversation Memory**: Remembers 5 Q&A exchanges per video
+- **Clickable Timestamps**: Click `[MM:SS]` in answers to seek video
+- **Quick Suggestions**: Pre-built question buttons
+- **Token/Strategy Display**: Shows tokens used & search strategy per answer
+- **Dark Theme**: Matches YouTube's dark mode
+
+### Setup
+
+1. **Start the backend** (in `youtube-qna-assistant/`):
+   ```bash
+   python main.py
+   ```
+
+2. **Load extension in Chrome**:
+   - Open `chrome://extensions/`
+   - Enable **Developer mode** (top right toggle)
+   - Click **Load unpacked**
+   - Select the `youtube-chat-extension` folder
+
+3. **Use it**:
+   - Open any YouTube video (`youtube.com/watch?v=...`)
+   - Click the extension icon in toolbar → Opens side panel
+   - Or click the side panel button (puzzle piece → pin "YouTube AI Chat Assistant")
+   - Ask questions about the video!
+
+### Extension Files
+```
+youtube-chat-extension/
+├── manifest.json        # Manifest V3 (sidePanel + content script + background)
+├── background.js        # Service worker (API proxy to localhost:8000)
+├── content.js           # Extracts video ID, seeks video on timestamp click
+├── sidepanel.html       # Chat UI structure
+├── sidepanel.js         # Chat logic (send msg, format timestamps, seek video)
+├── sidepanel.css        # Dark theme styling
+└── icons/               # SVG icons (16, 48, 128)
+```
+
+### Extension Architecture
+```
+┌─────────────────┐     HTTP/WS      ┌─────────────────┐
+│  Chrome Ext     │ ◄─────────────►  │  FastAPI Backend│
+│  (Sidepanel)    │   /api/query     │  (your code)    │
+└────────┬────────┘                  └─────────────────┘
+         │
+         ▼
+┌─────────────────┐
+│  Content Script │──► Extracts video_id, seeks video
+│  (youtube.com)  │     via postMessage / video.currentTime
+└─────────────────┘
+```
+
 ## Testing
 
 ```bash
@@ -210,3 +269,6 @@ python check_transcript.py
 | `OPENAI_API_KEY not found` | Add to `.env` file |
 | Slow first query | RAG index builds on-demand; pre-create with `/api/session/create` |
 | Memory not working | Ensure `use_memory: true` in request |
+| Extension input disabled | Refresh YouTube page, reload extension, check backend running on localhost:8000 |
+| Timestamps not clickable | Reload extension & refresh YouTube page |
+| Video doesn't seek on timestamp click | Check YouTube page console for "No video player found" - refresh page |
